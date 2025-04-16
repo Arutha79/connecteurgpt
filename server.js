@@ -2,19 +2,30 @@ const express = require("express");
 const app = express();
 app.use(express.json());
 
-// Simule l’activation de ConnecteurGPT
+// ➤ Endpoint de diagnostic
+app.get("/", (req, res) => {
+  res.send("✅ ConnecteurGPT est en ligne.");
+});
+
+// ➤ Endpoint principal (simulation d’orchestration)
 app.post("/connecteurgpt", (req, res) => {
-  res.json({
-    status: "ConnecteurGPT opérationnel.",
-    mode: "Super Cerveau IA",
-    message: "Connexion entre GPTs, Alice, Prisma établie (simulée)"
+  const { action, cible } = req.body;
+
+  if (action === "connect" && cible === "supercerveau") {
+    return res.json({
+      status: "Succès",
+      message: "ConnecteurGPT a orchestré Alice ↔ Prisma ↔ GPTs.",
+      logs: ["Alice → OK", "Prisma → OK", "Railway → Préparé", "GitHub → Monitoré"]
+    });
+  }
+
+  res.status(400).json({
+    error: "Commande inconnue. Utilise action: 'connect', cible: 'supercerveau'."
   });
 });
 
-app.get("/", (req, res) => {
-  res.send("ConnecteurGPT est en ligne 🚀");
-});
-
-app.listen(3000, () => {
-  console.log("ConnecteurGPT tourne sur le port 3000");
+// ➤ Port Railway
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`🧠 ConnecteurGPT actif sur le port ${PORT}`);
 });
