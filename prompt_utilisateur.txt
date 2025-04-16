@@ -1,0 +1,2 @@
+Je veux que ConnecteurGPT orchestre les connexions entre tous mes agents IA (GPTs Vitaux et Métiers), Prisma, Alice, GitHub et Railway, de manière sécurisée et traçable.
+

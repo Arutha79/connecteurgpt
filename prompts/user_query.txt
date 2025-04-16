@@ -1,0 +1,4 @@
+Connexion demandée détectée. Étapes recommandées :
+1. Vérification des routes existantes
+2. Proposition de schéma d’intégration
+3. Validation humaine requise avant exécution

@@ -1,0 +1,1 @@
+Échec détecté dans le processus de connexion. Revoir les journaux d’intégration pour identifier la cause. Aucune action n’a été exécutée.
