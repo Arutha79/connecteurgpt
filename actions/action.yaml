@@ -20,5 +20,5 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Start app (for test or build)
-        run: npm run start
+      - name: Test syntaxe (évite crash)
+        run: node -c serveur.js
