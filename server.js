@@ -1,51 +1,39 @@
+// ✅ server.js de ConnecteurGPT avec logs détaillés
 const express = require("express");
-const fetch = require("node-fetch");
 const fs = require("fs");
 const path = require("path");
-const app = express();
-app.use(express.json());
+const fetch = require("node-fetch");
+require("dotenv").config();
 
-// ➤ Fichier des URL des agents
-const AGENTS_FILE = path.join(__dirname, "mémoire.json");
+const app = express();
+const PORT = process.env.PORT || 3000;
+const AGENTS_PATH = path.join(__dirname, "mémoire", "agents_gpt.json");
+
+app.use(express.json());
 
 function chargerAgents() {
   try {
-    const contenu = fs.readFileSync(AGENTS_FILE, "utf-8");
-    const json = JSON.parse(contenu);
-    return json.connexions || {};
+    const contenu = fs.readFileSync(AGENTS_PATH, "utf-8");
+    return JSON.parse(contenu);
   } catch (err) {
-    console.error("❌ Erreur lecture agents:", err.message);
+    console.error("❌ Erreur chargement agents:", err.message);
     return {};
   }
 }
 
-// ➤ Endpoint de diagnostic
+// ➤ Diagnostic de vie
 app.get("/", (req, res) => {
   res.send("✅ ConnecteurGPT est en ligne.");
 });
 
-// ➤ Endpoint principal (simulation d’orchestration)
-app.post("/connecteurgpt", (req, res) => {
-  const { action, cible } = req.body;
-
-  if (action === "connect" && cible === "supercerveau") {
-    return res.json({
-      status: "Succès",
-      message: "ConnecteurGPT a orchestré Alice ↔ Prisma ↔ GPTs.",
-      logs: ["Alice → OK", "Prisma → OK", "Railway → Préparé", "GitHub → Monitoré"]
-    });
-  }
-
-  res.status(400).json({
-    error: "Commande inconnue. Utilise action: 'connect', cible: 'supercerveau'."
-  });
-});
-
-// ➤ Nouvelle route universelle de transmission
+// ➤ Traitement des requêtes Prisma/Alice
 app.post("/transmettre", async (req, res) => {
   const { cible, intention, contenu } = req.body;
   const agents = chargerAgents();
   const url = agents[cible];
+
+  console.log("🔁 Reçu une intention pour", cible, "→", intention);
+  console.log("➡️ URL résolue :", url);
 
   if (!url) return res.status(400).json({ erreur: `Cible inconnue ou URL manquante pour ${cible}` });
 
@@ -56,15 +44,14 @@ app.post("/transmettre", async (req, res) => {
       body: JSON.stringify({ intention, contenu })
     });
     const data = await response.json();
+    console.log("✅ Réponse reçue de", url, ":", data);
     res.json({ statut: `✅ Transmis à ${cible}`, retour: data });
   } catch (err) {
-    console.error(`❌ Échec de communication avec ${cible}:`, err.message);
+    console.error(`❌ Échec de communication avec ${url} :`, err.message);
     res.status(500).json({ erreur: `Erreur lors de l'appel à ${cible}` });
   }
 });
 
-// ➤ Port Railway
-const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🧠 ConnecteurGPT actif sur le port ${PORT}`);
 });
