@@ -11,7 +11,8 @@ const AGENTS_FILE = path.join(__dirname, "mémoire.json");
 function chargerAgents() {
   try {
     const contenu = fs.readFileSync(AGENTS_FILE, "utf-8");
-    return JSON.parse(contenu);
+    const json = JSON.parse(contenu);
+    return json.connexions || {};
   } catch (err) {
     console.error("❌ Erreur lecture agents:", err.message);
     return {};
@@ -40,7 +41,7 @@ app.post("/connecteurgpt", (req, res) => {
   });
 });
 
-// ➤ Nouvelle route pour transmettre à un agent
+// ➤ Nouvelle route universelle de transmission
 app.post("/transmettre", async (req, res) => {
   const { cible, intention, contenu } = req.body;
   const agents = chargerAgents();
@@ -67,4 +68,3 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🧠 ConnecteurGPT actif sur le port ${PORT}`);
 });
-
