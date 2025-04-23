@@ -1,4 +1,4 @@
-// ✅ server.js modifié pour ConnecteurGPT avec logs complets
+// ✅ server.js modifié pour ConnecteurGPT avec logs complets ET correction URL canal-vitaux
 
 const express = require("express");
 const fs = require("fs");
@@ -58,6 +58,29 @@ app.post("/transmettre", async (req, res) => {
   } catch (err) {
     console.error("❌ [CONNECTEUR] Échec de communication :", err.message);
     res.status(500).json({ erreur: `Erreur lors de l'appel à ${cible}` });
+  }
+});
+
+// 🔄 Correction pour Prisma : nouvelle URL vers canal-vitaux distante
+app.post("/canal-vitaux", async (req, res) => {
+  const { cible, intention, contenu } = req.body;
+  console.log("📩 [PRISMA] canal-vitaux reçu :", { cible, intention, contenu });
+
+  try {
+    const response = await fetch("https://connecteurgpt-production.up.railway.app/transmettre", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      redirect: "follow",
+      body: JSON.stringify({ cible, intention, contenu })
+    });
+
+    const data = await response.json();
+    console.log("✅ [PRISMA] Réponse de ConnecteurGPT :", data);
+    res.status(200).json({ statut: "✅ Transmis via canal-vitaux", retour: data });
+
+  } catch (err) {
+    console.error("❌ [PRISMA] Erreur vers ConnecteurGPT :", err.message);
+    res.status(500).json({ erreur: "Échec de la transmission à ConnecteurGPT." });
   }
 });
 
