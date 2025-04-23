@@ -1,18 +1,9 @@
 {
-  "connexions": [
-    {
-      "nom": "alice",
-      "url": "https://gptportail-production.up.railway.app/poser-question"
-    },
-    {
-      "nom": "prisma",
-      "url": "https://web-production-6594.up.railway.app/poser-question"
-    },
-    {
-      "nom": "zoran",
-      "url": "https://zorangpt-production.up.railway.app/poser-question"
-    }
-  ],
-  "dernier_log": "Connexions vers Alice, Prisma, Zoran chargées",
+  "connexions": {
+    "alice": "https://gptportail-production.up.railway.app/canal-vitaux",
+    "prisma": "https://web-production-6594.up.railway.app/canal-vitaux",
+    "zoran": "https://zorangpt-production.up.railway.app/canal-vitaux"
+  },
+  "dernier_log": "✅ Agents enregistrés dans ConnecteurGPT",
   "historique": []
 }
