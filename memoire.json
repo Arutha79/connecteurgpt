@@ -2,7 +2,7 @@
   "connexions": {
     "alice": "https://gptportail-production.up.railway.app/canal-vitaux",
     "prisma": "https://web-production-6594.up.railway.app/canal-vitaux",
-    "zoran": "https://zorangpt-production.up.railway.app/canal-vitaux"
+    "zorangpt": "https://zorangpt-production.up.railway.app/canal-vitaux"
   },
   "dernier_log": "✅ Agents enregistrés dans ConnecteurGPT",
   "historique": []
