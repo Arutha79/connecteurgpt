@@ -1,0 +1,18 @@
+{
+  "connexions": {
+    "PromptGPT": "https://promptgpt-production.up.railway.app",
+    "TextGPT": "https://textgpt-production.up.railway.app",
+    "ImageGPT": "https://imagegpt-production.up.railway.app",
+    "BuilderGPT": "https://buildergpt-production.up.railway.app",
+    "SécuritéGPT": "https://securitegpt-production.up.railway.app",
+    "CheckerGPT": "https://checkergpt-production.up.railway.app",
+    "ForgeurGPT": "https://forgeurgpt-production.up.railway.app",
+    "ZoranGPT": "https://zorangpt-production.up.railway.app",
+    "PolymorpheGPT": "https://polymorphegpt-production.up.railway.app",
+    "MédecinGPT": "https://medecingpt-production.up.railway.app",
+    "GPTClonerGPT": "https://gptclonergpt-production.up.railway.app",
+    "SentinelleIA": "https://sentinelleia-production.up.railway.app",
+    "MaintenanceGPT": "https://maintenancegpt-production.up.railway.app",
+    "Synthépro": "https://synthepro-production.up.railway.app"
+  }
+}
