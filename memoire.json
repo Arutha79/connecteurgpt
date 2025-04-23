@@ -1,5 +1,18 @@
 {
-  "connexions": [],
-  "dernier_log": "Initialisation mémoire",
+  "connexions": [
+    {
+      "nom": "alice",
+      "url": "https://gptportail-production.up.railway.app/poser-question"
+    },
+    {
+      "nom": "prisma",
+      "url": "https://web-production-6594.up.railway.app/poser-question"
+    },
+    {
+      "nom": "zoran",
+      "url": "https://zorangpt-production.up.railway.app/poser-question"
+    }
+  ],
+  "dernier_log": "Connexions vers Alice, Prisma, Zoran chargées",
   "historique": []
 }
