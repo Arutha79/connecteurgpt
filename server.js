@@ -1,4 +1,5 @@
-// ✅ server.js de ConnecteurGPT avec logs détaillés
+// ✅ server.js modifié pour ConnecteurGPT avec logs complets
+
 const express = require("express");
 const fs = require("fs");
 const path = require("path");
@@ -11,31 +12,37 @@ const AGENTS_PATH = path.join(__dirname, "mémoire", "agents_gpt.json");
 
 app.use(express.json());
 
+// 📋 Log toutes les requêtes entrantes
+app.use((req, res, next) => {
+  console.log(`[📥 INCOMING] ${req.method} ${req.originalUrl}`);
+  next();
+});
+
 function chargerAgents() {
   try {
     const contenu = fs.readFileSync(AGENTS_PATH, "utf-8");
-    return JSON.parse(contenu);
+    return JSON.parse(contenu).connexions || {};
   } catch (err) {
     console.error("❌ Erreur chargement agents:", err.message);
     return {};
   }
 }
 
-// ➤ Diagnostic de vie
 app.get("/", (req, res) => {
   res.send("✅ ConnecteurGPT est en ligne.");
 });
 
-// ➤ Traitement des requêtes Prisma/Alice
 app.post("/transmettre", async (req, res) => {
   const { cible, intention, contenu } = req.body;
+  console.log("📨 [CONNECTEUR] Transfert reçu :", { cible, intention, contenu });
+
   const agents = chargerAgents();
   const url = agents[cible];
 
-  console.log("🔁 Reçu une intention pour", cible, "→", intention);
-  console.log("➡️ URL résolue :", url);
-
-  if (!url) return res.status(400).json({ erreur: `Cible inconnue ou URL manquante pour ${cible}` });
+  if (!url) {
+    console.warn("⚠️ [CONNECTEUR] Cible inconnue :", cible);
+    return res.status(400).json({ erreur: `Cible inconnue ou URL manquante pour ${cible}` });
+  }
 
   try {
     const response = await fetch(url, {
@@ -43,11 +50,13 @@ app.post("/transmettre", async (req, res) => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ intention, contenu })
     });
-    const data = await response.json();
-    console.log("✅ Réponse reçue de", url, ":", data);
-    res.json({ statut: `✅ Transmis à ${cible}`, retour: data });
+
+    const retour = await response.json();
+    console.log("✅ [CONNECTEUR] Réponse de", url, ":", retour);
+    res.json({ statut: `✅ Transmis à ${cible}`, retour });
+
   } catch (err) {
-    console.error(`❌ Échec de communication avec ${url} :`, err.message);
+    console.error("❌ [CONNECTEUR] Échec de communication :", err.message);
     res.status(500).json({ erreur: `Erreur lors de l'appel à ${cible}` });
   }
 });
