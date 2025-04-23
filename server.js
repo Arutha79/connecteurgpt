@@ -1,6 +1,22 @@
 const express = require("express");
+const fetch = require("node-fetch");
+const fs = require("fs");
+const path = require("path");
 const app = express();
 app.use(express.json());
+
+// ➤ Fichier des URL des agents
+const AGENTS_FILE = path.join(__dirname, "mémoire.json");
+
+function chargerAgents() {
+  try {
+    const contenu = fs.readFileSync(AGENTS_FILE, "utf-8");
+    return JSON.parse(contenu);
+  } catch (err) {
+    console.error("❌ Erreur lecture agents:", err.message);
+    return {};
+  }
+}
 
 // ➤ Endpoint de diagnostic
 app.get("/", (req, res) => {
@@ -24,8 +40,31 @@ app.post("/connecteurgpt", (req, res) => {
   });
 });
 
+// ➤ Nouvelle route pour transmettre à un agent
+app.post("/transmettre", async (req, res) => {
+  const { cible, intention, contenu } = req.body;
+  const agents = chargerAgents();
+  const url = agents[cible];
+
+  if (!url) return res.status(400).json({ erreur: `Cible inconnue ou URL manquante pour ${cible}` });
+
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ intention, contenu })
+    });
+    const data = await response.json();
+    res.json({ statut: `✅ Transmis à ${cible}`, retour: data });
+  } catch (err) {
+    console.error(`❌ Échec de communication avec ${cible}:`, err.message);
+    res.status(500).json({ erreur: `Erreur lors de l'appel à ${cible}` });
+  }
+});
+
 // ➤ Port Railway
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🧠 ConnecteurGPT actif sur le port ${PORT}`);
 });
+
