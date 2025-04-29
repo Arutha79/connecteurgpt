@@ -1,4 +1,4 @@
-// ✅ server.js complet pour ConnecteurGPT avec route /analyze intégrée
+// ✅ server.js ConnecteurGPT avec analyse + modification réelle via GitHub
 
 const express = require("express");
 const fs = require("fs");
@@ -13,7 +13,6 @@ const AGENTS_PATH = path.join(__dirname, "mémoire", "agents_gpt.json");
 
 app.use(express.json());
 
-// 📋 Log toutes les requêtes entrantes
 app.use((req, res, next) => {
   console.log(`[📥 INCOMING] ${req.method} ${req.originalUrl}`);
   next();
@@ -67,7 +66,6 @@ app.post("/transmettre", async (req, res) => {
   }
 });
 
-// 🔄 Canal PRISMA (redirige vers /transmettre)
 app.post("/canal-vitaux", async (req, res) => {
   const { cible, intention, contenu } = req.body;
   console.log("📩 [PRISMA] canal-vitaux reçu :", { cible, intention, contenu });
@@ -90,7 +88,6 @@ app.post("/canal-vitaux", async (req, res) => {
   }
 });
 
-// 🛠️ Ajout de la nouvelle route pour analyser un repo
 app.post("/analyze", async (req, res) => {
   const { repo_url, objectifs, source } = req.body;
 
@@ -101,7 +98,6 @@ app.post("/analyze", async (req, res) => {
   }
 
   try {
-    // Simule une réponse d'analyse
     const rapport = {
       depot: repo_url,
       actions_suggerees: [
@@ -116,11 +112,57 @@ app.post("/analyze", async (req, res) => {
     };
 
     console.log("✅ [ANALYZE] Rapport généré :", rapport);
-
     res.json(rapport);
   } catch (error) {
     console.error("❌ [ANALYZE] Erreur durant l'analyse :", error.message);
     res.status(500).json({ erreur: "Erreur serveur durant l'analyse." });
+  }
+});
+
+// 🔧 Ajout de la route /corriger – modifie un fichier du repo GitHub
+app.post("/corriger", async (req, res) => {
+  const { repo_owner, repo_name, fichier_cible, message_commit } = req.body;
+
+  const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+  if (!GITHUB_TOKEN) return res.status(401).json({ erreur: "Token GitHub manquant." });
+
+  try {
+    const getUrl = `https://api.github.com/repos/${repo_owner}/${repo_name}/contents/${fichier_cible}`;
+    const responseGet = await fetch(getUrl, {
+      headers: { Authorization: `Bearer ${GITHUB_TOKEN}` }
+    });
+    const dataGet = await responseGet.json();
+
+    const sha = dataGet.sha;
+    const content = Buffer.from(dataGet.content, 'base64').toString("utf-8");
+
+    const nouveauContenu = `// ✅ Modifié par ConnecteurGPT le ${new Date().toISOString()}\n` + content;
+
+    const updateResponse = await fetch(getUrl, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${GITHUB_TOKEN}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        message: message_commit || "feat: mise à jour automatique par ConnecteurGPT",
+        content: Buffer.from(nouveauContenu).toString("base64"),
+        sha
+      })
+    });
+
+    const updateResult = await updateResponse.json();
+
+    if (updateResult.commit) {
+      console.log("✅ Code modifié et commité :", updateResult.commit.sha);
+      res.json({ statut: "✅ Modification envoyée", commit: updateResult.commit.sha });
+    } else {
+      console.error("❌ Échec durant commit :", updateResult);
+      res.status(500).json({ erreur: "Échec commit GitHub", details: updateResult });
+    }
+  } catch (err) {
+    console.error("❌ /corriger :", err.message);
+    res.status(500).json({ erreur: err.message });
   }
 });
 
