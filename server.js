@@ -1,4 +1,4 @@
-// ✅ server.js complet pour ConnecteurGPT avec correction automatique de ZoranGPT
+// ✅ server.js complet pour ConnecteurGPT avec route /analyze intégrée
 
 const express = require("express");
 const fs = require("fs");
@@ -87,6 +87,40 @@ app.post("/canal-vitaux", async (req, res) => {
   } catch (err) {
     console.error("❌ [PRISMA] Erreur vers ConnecteurGPT :", err.message);
     res.status(500).json({ erreur: "Échec de la transmission à ConnecteurGPT." });
+  }
+});
+
+// 🛠️ Ajout de la nouvelle route pour analyser un repo
+app.post("/analyze", async (req, res) => {
+  const { repo_url, objectifs, source } = req.body;
+
+  console.log("🔵 [ANALYZE] Analyse demandée :", { repo_url, objectifs, source });
+
+  if (!repo_url) {
+    return res.status(400).json({ erreur: "Aucun dépôt GitHub fourni." });
+  }
+
+  try {
+    // Simule une réponse d'analyse
+    const rapport = {
+      depot: repo_url,
+      actions_suggerees: [
+        "Nettoyer les imports inutiles",
+        "Améliorer la structure des routes",
+        "Ajouter plus de commentaires dans le code",
+        "Mettre à jour la documentation README"
+      ],
+      analyse_effectuée_par: "ConnecteurGPT",
+      source_origine: source || "inconnue",
+      date: new Date().toISOString()
+    };
+
+    console.log("✅ [ANALYZE] Rapport généré :", rapport);
+
+    res.json(rapport);
+  } catch (error) {
+    console.error("❌ [ANALYZE] Erreur durant l'analyse :", error.message);
+    res.status(500).json({ erreur: "Erreur serveur durant l'analyse." });
   }
 });
 
