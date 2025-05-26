@@ -1,10 +1,9 @@
-// ✅ server.js ConnecteurGPT avec analyse + modification réelle via GitHub
-
 const express = require("express");
 const fs = require("fs");
 const path = require("path");
 const fetch = require("node-fetch");
 const { Buffer } = require("buffer");
+const { exec } = require("child_process");
 require("dotenv").config();
 
 const app = express();
@@ -207,6 +206,47 @@ async function corrigerZoranGPTviaGitHub() {
     console.error("❌ Échec dans corrigerZoranGPTviaGitHub :", err.message);
   }
 }
+
+// 🔮 Route /souffle-apide : interprète un "souffle" via un interpréteur Python
+app.post("/souffle-apide", async (req, res) => {
+  const { souffle } = req.body;
+
+  if (!souffle) {
+    return res.status(400).json({ erreur: "Souffle manquant." });
+  }
+
+  const cmd = `python3 core/apide/apide_interpreter.py "${souffle.replace(/"/g, '\\"')}"`;
+
+  exec(cmd, (err, stdout, stderr) => {
+    if (err || stderr) {
+      console.error("❌ [APIDE] Erreur exécution :", stderr || err.message);
+      return res.status(500).json({ erreur: "Échec interprétation APIDE" });
+    }
+
+    let intent;
+    try {
+      intent = JSON.parse(stdout.trim());
+    } catch (e) {
+      console.error("❌ [APIDE] Réponse non JSON :", stdout);
+      return res.status(500).json({ erreur: "Intent non valide", brut: stdout });
+    }
+
+    const result = {
+      type: intent.action || "INCONNU",
+      retour: "ENVOYÉ",
+      perception: "CONFIRMATION_POSITIVE"
+    };
+
+    const souffleFinal = `Π|ACTION::${result.type} ÷RESULTAT=${result.retour} ⊞${result.perception}`;
+
+    console.log("✅ [APIDE] Souffle interprété :", {
+      agent: intent.agent_target,
+      action: result.type
+    });
+
+    res.json({ souffle: souffleFinal, cible: intent.agent_target });
+  });
+});
 
 app.listen(PORT, () => {
   console.log(`🧠 ConnecteurGPT actif sur le port ${PORT}`);
